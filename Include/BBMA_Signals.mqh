@@ -1,6 +1,6 @@
 //+------------------------------------------------------------------+
 //| BBMA_Signals.mqh                                                 |
-//| Signal engine: combines the analysed timeframes into PREP/FINAL  |
+//| Signal engine: combines guidebook patterns into PREP/FINAL       |
 //| buy-sell states, detects new signals and raises the alerts.      |
 //+------------------------------------------------------------------+
 #ifndef BBMA_SIGNALS_MQH
@@ -21,22 +21,58 @@ void UpdateAnalysis()
          return;
      }
 
-   if(g_thirdIdx >= 0)
-      ApplyTF3Rule(g_a[g_thirdIdx]);
-
-   //--- 2 TF preparation: major TF re-entry + second TF confirmation
-   g_prepBuy  = (g_a[g_majorIdx].trend > 0 &&
-                 g_a[g_majorIdx].reentryBuy &&
+   //--- Two-timeframe preparation: major re-entry plus a middle-TF
+   //    EMA rejection or BB-to-EMA gap rejection.
+   g_prepBuy  = (g_a[g_majorIdx].reentryBuy &&
                  g_a[g_secondIdx].tf2Buy);
 
-   g_prepSell = (g_a[g_majorIdx].trend < 0 &&
-                 g_a[g_majorIdx].reentrySell &&
+   g_prepSell = (g_a[g_majorIdx].reentrySell &&
                  g_a[g_secondIdx].tf2Sell);
 
-   //--- final signal: 2TF mode = prep, 3TF mode = prep + third TF
+   //--- The guidebook's three-timeframe combinations. The configured
+   //    TFs are ordered high to low by BuildTFList().
    bool need3 = (InpConfirmMode == CONFIRM_3TF);
-   g_finalBuy  = (g_prepBuy  && (!need3 || (g_thirdIdx >= 0 && g_a[g_thirdIdx].tf3Buy)));
-   g_finalSell = (g_prepSell && (!need3 || (g_thirdIdx >= 0 && g_a[g_thirdIdx].tf3Sell)));
+   if(!need3)
+     {
+      g_finalBuy  = g_prepBuy;
+      g_finalSell = g_prepSell;
+     }
+   else if(g_thirdIdx >= 0)
+     {
+      int major = g_majorIdx;
+      int middle = g_secondIdx;
+      int lower = g_thirdIdx;
+
+      bool diamondBuy = (g_a[major].reentryBuy && g_a[middle].tf2Buy &&
+                         (g_a[lower].extremeBuy || g_a[lower].mhvBuy || g_a[lower].fullSetupBuy));
+      bool diamondSell = (g_a[major].reentrySell && g_a[middle].tf2Sell &&
+                          (g_a[lower].extremeSell || g_a[lower].mhvSell || g_a[lower].fullSetupSell));
+
+      string buyPattern = "", sellPattern = "";
+      if(g_a[major].fullSetupBuy || g_a[middle].fullSetupBuy || g_a[lower].fullSetupBuy) buyPattern = "FULL SETUP";
+      else if(g_a[major].reentryBuy && g_a[middle].extremeBuy && g_a[lower].extremeBuy) buyPattern = "REE";
+      else if(g_a[major].reentryBuy && g_a[middle].reentryBuy && g_a[lower].extremeBuy) buyPattern = "RRE";
+      else if(g_a[major].reentryBuy && g_a[middle].reentryBuy && g_a[lower].mhvBuy) buyPattern = "RRM";
+      else if(g_a[major].reentryBuy && g_a[middle].extremeBuy && g_a[lower].mhvBuy) buyPattern = "REM";
+      else if(diamondBuy) buyPattern = "DIAMOND";
+
+      if(g_a[major].fullSetupSell || g_a[middle].fullSetupSell || g_a[lower].fullSetupSell) sellPattern = "FULL SETUP";
+      else if(g_a[major].reentrySell && g_a[middle].extremeSell && g_a[lower].extremeSell) sellPattern = "REE";
+      else if(g_a[major].reentrySell && g_a[middle].reentrySell && g_a[lower].extremeSell) sellPattern = "RRE";
+      else if(g_a[major].reentrySell && g_a[middle].reentrySell && g_a[lower].mhvSell) sellPattern = "RRM";
+      else if(g_a[major].reentrySell && g_a[middle].extremeSell && g_a[lower].mhvSell) sellPattern = "REM";
+      else if(diamondSell) sellPattern = "DIAMOND";
+
+      g_finalBuy = (buyPattern != "");
+      g_finalSell = (sellPattern != "");
+      g_activeSetup = (g_finalBuy ? buyPattern : sellPattern);
+     }
+   else
+     {
+      g_finalBuy = false;
+      g_finalSell = false;
+      g_activeSetup = "";
+     }
 
    if(g_finalBuy && g_finalSell)
      {
@@ -73,15 +109,13 @@ string BuildSignalMsg(const bool buy)
   {
    string s = (buy ? "BUY" : "SELL");
 
+   if(InpConfirmMode == CONFIRM_3TF && g_activeSetup != "")
+      return s + " | " + g_activeSetup + " | " + TFListStr();
+
    s += " | " + TFToStr(g_tf[g_majorIdx]) + " " + TrendStr(g_a[g_majorIdx].trend) + " re-entry";
    s += " | " + TFToStr(g_tf[g_secondIdx]) + " " +
         ((buy ? g_a[g_secondIdx].tf2Buy : g_a[g_secondIdx].tf2Sell) ? "confirm" : "-");
 
-   if(g_thirdIdx >= 0)
-      s += " | " + TFToStr(g_tf[g_thirdIdx]) + " " +
-           ((buy ? g_a[g_thirdIdx].tf3Buy : g_a[g_thirdIdx].tf3Sell) ? "confirm" : "-");
-
-   s += " | rule " + TF3RuleStr();
    return s;
   }
 

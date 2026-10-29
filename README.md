@@ -2,7 +2,7 @@
 
 EA MQL5 berbasis strategi **BBMA Oma Ally** dengan konfirmasi multi-timeframe,
 khusus **XAUUSD** dan **tanpa scanner**. Timeframe bisa dipilih sendiri dari:
-**1D / 4H / 1H / 15M**.
+**W1 / D1 / H4 / H1 / M15 / M5**.
 
 > **Penting:** ini bukan hasil decompile file `.ex5` asli (file asli terproteksi).
 > Ini implementasi ulang dari aturan strategi yang terdokumentasi di guidebook.
@@ -22,7 +22,7 @@ Folder `Include/` harus selalu ikut tersalin bersama file `.mq5`.
 | `Include/BBMA_State.mqh` | Semua state global (`g_tf`, `g_a`, `g_prepBuy`, ...) + objek `CTrade` |
 | `Include/BBMA_Utils.mqh` | Helper teks (`TFToStr`, `TrendStr`, ...), `IsNewBar`, `BufSeries`, `NormalizeLot` |
 | `Include/BBMA_Timeframes.mqh` | Registry TF: slot, peran MAJOR/SECOND/THIRD, handle indikator |
-| `Include/BBMA_Analysis.mqh` | Deteksi pola BBMA per TF + `ApplyTF3Rule` |
+| `Include/BBMA_Analysis.mqh` | Deteksi pola BBMA per TF |
 | `Include/BBMA_Signals.mqh` | Gabungan TF → PREP/FINAL + teks sinyal |
 | `Include/BBMA_Alerts.mqh` | Popup, push, Telegram |
 | `Include/BBMA_Trading.mqh` | Entry, lot, SL/TP, close all, aturan exit |
@@ -74,9 +74,11 @@ Aktifkan TF lewat input:
 | Input | Default | Keterangan |
 |---|---|---|
 | `InpUseD1` | false | Aktifkan 1D |
+| `InpUseW1` | false | Aktifkan 1W |
 | `InpUseH4` | true | Aktifkan 4H |
 | `InpUseH1` | true | Aktifkan 1H |
 | `InpUseM15` | true | Aktifkan 15M |
+| `InpUseM5` | false | Aktifkan 5M |
 | `InpConfirmMode` | 3TF | 2TF atau 3TF |
 
 **Aturan jumlah TF:**
@@ -88,9 +90,9 @@ TF yang aktif otomatis diurutkan dari besar ke kecil:
 
 | Posisi | Peran |
 |---|---|
-| TF tertinggi | **MAJOR** — tren + re-entry |
-| TF tengah | **SECOND** — GAP / Rejection |
-| TF terendah | **THIRD** — Extreme / MHV / Direction / Full Setup |
+| TF tertinggi | **MAJOR** — Re-entry / Full Setup |
+| TF tengah | **SECOND** — Re-entry, Extreme, MHV, atau rejection |
+| TF terendah | **THIRD** — Extreme, MHV, Re-entry, atau Full Setup |
 
 **Contoh kombinasi:**
 
@@ -111,27 +113,25 @@ mode 3TF tetapi 4 TF aktif → matikan salah satu.
 
 ## 4. Logika sinyal
 
-### MAJOR TF
-- Tren: harga vs **EMA50** + slope EMA50, dan susunan **MA5 (High)** vs **MA10 (Low)**.
-- **Extreme**: candle menyentuh/menembus Bollinger Bands (20, 2).
-- **MHV**: area antara MA5 dan MA10.
-- **CSM**: candle momentum (body ≥ `InpCsmBodyATR` × ATR).
-- **CSAK**: candle arah setelah MHV.
-- **Re-entry**: sudah ada CSM, harga pullback ke MA5/MA10, lalu close kembali searah tren.
+### Definisi pola dari guidebook
+- **CSAK/CSD**: candle menembus MA5 High dan BB Mid untuk BUY, atau MA10 Low dan BB Mid untuk SELL.
+- **CSM**: candle menembus MA5 High dan BB Upper untuk BUY, atau MA10 Low dan BB Lower untuk SELL.
+- **Re-entry**: candle menolak MA10 Low (BUY) atau MA5 High (SELL), kemudian candle tertutup berikutnya mengonfirmasi dengan CSAK/CSM searah.
+- **Extreme**: MA10 berada di bawah BB Lower untuk BUY atau MA5 berada di atas BB Upper untuk SELL, disertai candle reversal.
+- **MHV**: setelah Extreme, harga kembali ke zona MA5/MA10 dan tidak ada CSM berlawanan yang mematahkan extreme.
+- **Rejected EMA50**: EMA50 berada di sisi luar BB Mid dan candle menolak EMA50.
+- **Gap BB to EMA50**: EMA50 berada di luar BB Lower/Upper dan candle menolak band tersebut.
 
-### SECOND TF
-- **GAP**: candle open/close di luar area MA5–MA10.
-- **Rejection**: EMA50 di luar Bollinger Bands
-  (di atas upper = bearish, di bawah lower = bullish).
-- Konfirmasi jika salah satu terpenuhi.
+### Kombinasi multi-timeframe 3TF
+Tiga timeframe aktif diurutkan dari tinggi ke rendah dan diperiksa untuk pola guidebook:
+- **Full Setup**: Extreme → TPW (sentuh MA5/10) → MHV → Direction → Re-entry.
+- **REE**: Re-entry → Extreme → Extreme.
+- **RRE**: Re-entry → Re-entry → Extreme.
+- **RRM**: Re-entry → Re-entry → MHV.
+- **REM**: Re-entry → Extreme → MHV.
+- **Diamond Setup**: Re-entry → Rejected EMA50/Gap → Extreme/MHV/Full Setup.
 
-### THIRD TF
-Pilih lewat `InpTF3Rule`:
-- `TF3_ANY` — salah satu konfirmasi.
-- `TF3_EXTREME` — Extreme.
-- `TF3_MHV` — MHV.
-- `TF3_DIRECTION` — CSAK/CSM pertama setelah MHV.
-- `TF3_FULL_SETUP` — Extreme → MHV → CSAK/CSM → Re-entry.
+Status pola ditentukan otomatis dari susunan timeframe aktif.
 
 ### Status
 - **PREP BUY/SELL** — 2 TF sudah konfirmasi, menunggu TF ketiga (mode 3TF).
@@ -146,7 +146,7 @@ Pilih lewat `InpTF3Rule`:
 | `InpBBPeriod / InpBBDeviation` | 20 / 2.0 | Bollinger Bands |
 | `InpFastMA / InpSlowMA` | 5 / 10 | MA High / MA Low |
 | `InpTrendEMA` | 50 | EMA trend |
-| `InpCsmBodyATR` | 1.2 | Ambang candle momentum |
+| `InpSetupLookback` | 20 | Batas bar untuk mencari urutan setup |
 | `InpLotMode / InpLot / InpRiskPercent` | Fixed / 0.01 / 1% | Lot |
 | `InpSLATR / InpRR` | 1.5 / 1.5 | SL berbasis ATR & RR |
 | `InpMaxSpread` | 50 pts | Filter spread XAUUSD |
@@ -232,9 +232,9 @@ Input tampilan:
 
 ## 8. Tuning
 
-- Sinyal terlalu sering: naikkan `InpCsmBodyATR` (1.5–1.8) atau pakai
-  `InpTF3Rule = TF3_FULL_SETUP`.
-- Sinyal terlalu jarang: turunkan `InpCsmBodyATR` atau pakai `TF3_ANY`.
+- Sinyal terlalu sering: naikkan `InpSetupLookback` hanya jika ingin memperluas
+  pencarian Full Setup; entry pola lain mengikuti definisi guidebook.
+- Sinyal terlalu jarang: periksa urutan timeframe dan definisi candle rejection.
 - Kombinasi swing: **1D + 4H + 1H** (3TF) atau **4H + 1H** (2TF).
 - Kombinasi intraday: **4H + 1H + 15M** (3TF) atau **1H + 15M** (2TF).
 

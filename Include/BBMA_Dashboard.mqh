@@ -69,18 +69,18 @@ void CreateButton(const string name, const string text, const int x, const int y
   }
 
 //+------------------------------------------------------------------+
-//| TF column -> slot index (W1=-1,D1=0,H4=1,H1=2,M15=3,M5=-1)       |
+//| TF column -> slot index (W1=0,D1=1,H4=2,H1=3,M15=4,M5=5)        |
 //+------------------------------------------------------------------+
 int DashSlot(const int col)
   {
    switch(col)
      {
-      case 1: return -1; // W1
-      case 2: return 0;  // D1
-      case 3: return 1;  // H4
-      case 4: return 2;  // H1
-      case 5: return 3;  // M15
-      case 6: return -1; // M5
+      case 1: return 0; // W1
+      case 2: return 1; // D1
+      case 3: return 2; // H4
+      case 4: return 3; // H1
+      case 5: return 4; // M15
+      case 6: return 5; // M5
      }
    return -1;
   }
@@ -98,17 +98,27 @@ void TFCellStatus(const int slot, string &text, color &bg, color &fg)
       return;
 
    bool buy = false, sell = false;
-   if(slot == g_majorIdx)      { buy = g_a[slot].reentryBuy;  sell = g_a[slot].reentrySell; }
-   else if(slot == g_secondIdx){ buy = g_a[slot].tf2Buy;      sell = g_a[slot].tf2Sell; }
-   else if(slot == g_thirdIdx) { buy = g_a[slot].tf3Buy;      sell = g_a[slot].tf3Sell; }
-   else return;
+   string buyType = "", sellType = "";
+   if(g_a[slot].reentryBuy)  { buy = true; buyType = "Re"; }
+   else if(g_a[slot].extremeBuy) { buy = true; buyType = "Ex"; }
+   else if(g_a[slot].mhvBuy) { buy = true; buyType = "MHV"; }
+   else if(g_a[slot].fullSetupBuy) { buy = true; buyType = "Full"; }
+   else if(g_a[slot].rejectionBuy) { buy = true; buyType = "Rj"; }
+   else if(g_a[slot].gapBuy) { buy = true; buyType = "Gap"; }
+
+   if(g_a[slot].reentrySell) { sell = true; sellType = "Re"; }
+   else if(g_a[slot].extremeSell) { sell = true; sellType = "Ex"; }
+   else if(g_a[slot].mhvSell) { sell = true; sellType = "MHV"; }
+   else if(g_a[slot].fullSetupSell) { sell = true; sellType = "Full"; }
+   else if(g_a[slot].rejectionSell) { sell = true; sellType = "Rj"; }
+   else if(g_a[slot].gapSell) { sell = true; sellType = "Gap"; }
 
    if(buy && sell)
      { text = "B/S"; bg = C'160,120,0'; fg = clrGold; return; }
    if(buy)
-     { text = "Re";  bg = C'40,90,40';   fg = clrLime; return; }
+     { text = buyType; bg = C'40,90,40'; fg = clrLime; return; }
    if(sell)
-     { text = "Re";  bg = C'120,40,40';  fg = clrTomato; return; }
+     { text = sellType; bg = C'120,40,40'; fg = clrTomato; return; }
 
    int t = g_a[slot].trend;
    if(t > 0) { text = "UP"; bg = C'30,60,30';  fg = clrLime; }

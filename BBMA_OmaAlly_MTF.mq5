@@ -1,13 +1,13 @@
 //+------------------------------------------------------------------+
 //|                                       BBMA_OmaAlly_MTF.mq5       |
 //|  BBMA Oma Ally multi-timeframe EA for XAUUSD                     |
-//|  Selectable TFs: 1D / 4H / 1H / 15M  |  2TF or 3TF confirmation  |
+//|  Selectable TFs: W1 / D1 / H4 / H1 / M15 / M5                    |
 //+------------------------------------------------------------------+
 #property copyright "Rebuild for personal use"
 #property version   "1.27"
 #property description "BBMA Oma Ally MTF for XAUUSD - selectable 1D/4H/1H/15M"
-#property description "TF1: trend + re-entry | TF2: gap/rejection | TF3: extreme/MHV/direction/full setup"
-#property description "2TF = final at 2 TFs, 3TF = final at 3 TFs. Dashboard + alerts + optional auto-trade."
+#property description "BBMA Oma Ally: CSAK/CSM, Reentry, Extreme, MHV and multi-timeframe setups"
+#property description "Dashboard + alerts + optional auto-trade."
 #property link      ""
 
 //+------------------------------------------------------------------+
@@ -33,12 +33,13 @@
 //| Inputs                                                           |
 //+------------------------------------------------------------------+
 input group "=== TIMEFRAMES (XAUUSD) ==="
+input bool              InpUseW1         = false;     // Enable 1W
 input bool              InpUseD1         = false;     // Enable 1D
 input bool              InpUseH4         = true;      // Enable 4H
 input bool              InpUseH1         = true;      // Enable 1H
 input bool              InpUseM15        = true;      // Enable 15M
+input bool              InpUseM5         = false;     // Enable 5M
 input ENUM_CONFIRM_MODE InpConfirmMode   = CONFIRM_3TF; // 2TF or 3TF
-input ENUM_TF3_RULE     InpTF3Rule       = TF3_ANY;   // TF3 confirmation rule
 
 input group "=== BBMA PARAMETERS ==="
 input int    InpBBPeriod        = 20;     // Bollinger Bands period
@@ -47,10 +48,7 @@ input int    InpFastMA          = 5;      // MA fast (applied to High)
 input int    InpSlowMA          = 10;     // MA slow (applied to Low)
 input int    InpTrendEMA        = 50;     // Trend EMA (applied to Close)
 input int    InpATRPeriod       = 14;     // ATR period
-input double InpCsmBodyATR      = 1.2;    // CSM body >= x * ATR
-input int    InpExtremeLookback = 3;      // Extreme lookback (bars)
 input int    InpSetupLookback   = 20;     // Setup/full-setup lookback (bars)
-input double InpPullbackTolATR  = 0.10;   // Pullback tolerance (x ATR)
 input bool   InpRequireMAStack  = true;   // Require MA5/MA10 stack with trend
 
 input group "=== SIGNALS / ALERTS ==="

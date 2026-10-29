@@ -7,8 +7,8 @@
 #define BBMA_TYPES_MQH
 
 //--- Number of timeframe slots handled by the EA.
-//    Slot order is fixed, highest timeframe first: 0=1D 1=4H 2=1H 3=15M
-#define BBMA_TF_SLOTS 4
+//    Slot order: W1, D1, H4, H1, M15, M5
+#define BBMA_TF_SLOTS 6
 
 //+------------------------------------------------------------------+
 //| Enums                                                            |
@@ -18,16 +18,6 @@ enum ENUM_CONFIRM_MODE
   {
    CONFIRM_2TF = 0,   // 2 TF
    CONFIRM_3TF = 1    // 3 TF
-  };
-
-//--- Which confirmation the third (lowest) timeframe must show
-enum ENUM_TF3_RULE
-  {
-   TF3_ANY        = 0, // Any of the TF3 confirmations
-   TF3_EXTREME    = 1, // Extreme only
-   TF3_MHV        = 2, // MHV only
-   TF3_DIRECTION  = 3, // First CSAK/CSM after MHV
-   TF3_FULL_SETUP = 4  // Extreme > MHV > CSM/CSAK > Re-entry
   };
 
 //--- Position sizing method
@@ -65,6 +55,8 @@ struct TFAnalysis
    bool     extremeBuy;
    bool     extremeSell;
    bool     mhv;
+   bool     mhvBuy;
+   bool     mhvSell;
    bool     csmBuy;
    bool     csmSell;
    bool     csakBuy;
@@ -81,8 +73,6 @@ struct TFAnalysis
    bool     fullSetupSell;
    bool     tf2Buy;
    bool     tf2Sell;
-   bool     tf3Buy;
-   bool     tf3Sell;
    double   bbUpper;
    double   bbLower;
    double   bbMid;

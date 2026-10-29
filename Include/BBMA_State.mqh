@@ -10,7 +10,7 @@
 #include <Trade\Trade.mqh>
 
 //--- TF registry: fixed slots, highest timeframe first
-ENUM_TIMEFRAMES g_tf[BBMA_TF_SLOTS];      // 0=D1 1=H4 2=H1 3=M15
+ENUM_TIMEFRAMES g_tf[BBMA_TF_SLOTS];      // W1, D1, H4, H1, M15, M5
 TFHandles       g_h[BBMA_TF_SLOTS];       // indicator handles per slot
 TFAnalysis      g_a[BBMA_TF_SLOTS];       // last analysis per slot
 datetime        g_lastBar[BBMA_TF_SLOTS]; // last processed bar time per slot
@@ -21,7 +21,7 @@ int  g_enabled[BBMA_TF_SLOTS];            // active slot indexes, ascending
 int  g_count      = 0;                    // number of active slots
 int  g_majorIdx   = -1;                   // highest TF  : trend + re-entry
 int  g_secondIdx  = -1;                   // middle TF   : gap / rejection
-int  g_thirdIdx   = -1;                   // lowest TF   : TF3 rule, -1 in 2TF
+int  g_thirdIdx   = -1;                   // lowest TF, -1 in 2TF mode
 bool g_configOk   = false;                // slot count matches the mode
 
 //--- Current signal state
@@ -29,6 +29,7 @@ bool g_prepBuy   = false;
 bool g_prepSell  = false;
 bool g_finalBuy  = false;
 bool g_finalSell = false;
+string g_activeSetup = "";
 
 //--- Previous signal state (edge detection)
 bool g_prevPrepBuy   = false;

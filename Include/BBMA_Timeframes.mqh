@@ -11,10 +11,12 @@
 //+------------------------------------------------------------------+
 void InitTFArrays()
   {
-   g_tf[0] = PERIOD_D1;
-   g_tf[1] = PERIOD_H4;
-   g_tf[2] = PERIOD_H1;
-   g_tf[3] = PERIOD_M15;
+   g_tf[0] = PERIOD_W1;
+   g_tf[1] = PERIOD_D1;
+   g_tf[2] = PERIOD_H4;
+   g_tf[3] = PERIOD_H1;
+   g_tf[4] = PERIOD_M15;
+   g_tf[5] = PERIOD_M5;
 
    for(int i = 0; i < BBMA_TF_SLOTS; i++)
      {
@@ -33,10 +35,12 @@ void InitTFArrays()
 //+------------------------------------------------------------------+
 void BuildTFList()
   {
-   g_use[0] = InpUseD1;
-   g_use[1] = InpUseH4;
-   g_use[2] = InpUseH1;
-   g_use[3] = InpUseM15;
+   g_use[0] = InpUseW1;
+   g_use[1] = InpUseD1;
+   g_use[2] = InpUseH4;
+   g_use[3] = InpUseH1;
+   g_use[4] = InpUseM15;
+   g_use[5] = InpUseM5;
 
    g_count = 0;
    for(int i = 0; i < BBMA_TF_SLOTS; i++)

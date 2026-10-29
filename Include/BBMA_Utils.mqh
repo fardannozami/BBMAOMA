@@ -31,24 +31,6 @@ string TrendStr(const int t)
    return "FLAT";
   }
 
-//--- Short label of the selected TF3 rule, used on the dashboard/alerts
-string TF3RuleStr()
-  {
-   switch(InpTF3Rule)
-     {
-      case TF3_EXTREME:
-         return "EXTREME";
-      case TF3_MHV:
-         return "MHV";
-      case TF3_DIRECTION:
-         return "DIRECTION";
-      case TF3_FULL_SETUP:
-         return "FULL";
-      default:
-         return "ANY";
-     }
-  }
-
 //--- Minimal URL escaping for the Telegram request
 string UrlEncode(string s)
   {
