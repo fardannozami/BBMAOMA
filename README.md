@@ -27,7 +27,7 @@ Folder `Include/` harus selalu ikut tersalin bersama file `.mq5`.
 | `Include/BBMA_Alerts.mqh` | Popup, push, Telegram |
 | `Include/BBMA_Trading.mqh` | Entry, lot, SL/TP, close all, aturan exit |
 | `Include/BBMA_Risk.mqh` | Batas rugi/target harian, tutup Jumat |
-| `Include/BBMA_Dashboard.mqh` | Panel chart + tombol BUY/SELL/CLOSE ALL |
+| `Include/BBMA_Dashboard.mqh` | **Dashboard tabel** (mirror gambar referensi): simbol, status per TF (W1–M5), tombol BUY/SELL/CLOSE, Allow, Signals, dan baris Mode + Risk Management di bawah |
 | `BBMA_OmaAlly_MTF.ex5` | Hasil kompilasi (0 errors, 0 warnings) |
 | `README.md` | Panduan ini |
 
@@ -155,6 +155,51 @@ Pilih lewat `InpTF3Rule`:
 | `InpCutLossOnCSM` | true | Cut loss CSM + break EMA50 di SECOND TF |
 | `InpDailyLossPct` | 3% | Batas rugi harian |
 | `InpFridayClose` | true | Tutup posisi Jumat jam 22 server |
+
+### Dashboard tabel (keterangan sinyal)
+
+Panel utama menampilkan tabel status sinyal per timeframe:
+
+```
+BBMA Oma Ally Analyzer Dashboard EA  XAUUSD
+SYMBOLS  W1  D1  H4  H1  M15  M5  Close All         Allow  Signals
+XAUUSD   --  --  --  Re  --   --  [BUY][SELL][CLOSE] x      --
+Full Auto Mode  |  TFs: 4H/1H/15M  |  3TF
+Risk Management Controller is Active
+```
+
+Arti sel TF:
+
+| Tanda | Arti |
+|---|---|
+| `--` | TF tidak aktif / belum ada data bar |
+| `Re` hijau | Re-entry terconfirim arah BUY (TF MAJOR) |
+| `Re` merah | Re-entry terconfirim arah SELL (TF MAJOR) |
+| `UP` / `DN` | Tren naik / turun (belum re-entry) |
+| `B/S` | Kedua arah terconfirim sekaligus |
+
+Tombol di bawah kolom **Close All** (klik untuk eksekusi semi-auto):
+
+| Tombol | Fungsi |
+|---|---|
+| BUY | Buka posisi BUY |
+| SELL | Buka posisi SELL |
+| CLOSE | Tutup semua posisi (Close All) |
+
+Kolom **Allow** menampilkan `✓` (hijau) jika auto-trade aktif dan tidak diblokir, `✗` (merah) jika tidak.
+
+Kolom **Signals** menampilkan sinyal gabungan: `BUY` / `SELL` / `PREP BUY` / `PREP SELL` / `--`.
+
+Baris bawah menampilkan mode (`Full Auto Mode` hijau / `Semi Auto Mode` abu-abu), TF yang aktif, serta status Risk Management Controller (`Active` hijau / `Inactive` merah, atau `CONFIG ERROR` jika jumlah TF ON tidak sesuai mode 2TF/3TF).
+
+Input tampilan:
+
+| Input | Default | Fungsi |
+|---|---|---|
+| `InpShowPanel` | true | Tampilkan/sembunyikan dashboard |
+| `InpPanelCorner` | CORNER_LEFT_UPPER | Sudut penempatan panel |
+| `InpPanelX / InpPanelY` | 20 / 30 | Jarak X dan Y panel |
+| `InpFontSize` | 9 | Ukuran font panel |
 
 ### Exit
 - **At MA** — keluar saat harga kembali ke MA5/MA10.
