@@ -63,7 +63,7 @@ Kalau mengubah source: buka `BBMA_OmaAlly_MTF.mq5` di MetaEditor, tekan **F7**
 Pastikan folder `Include/` berada tepat di samping file `.mq5`.
 
 Default = **Semi-Auto**: dashboard + alert + tombol **BUY / SELL / CLOSE ALL**.
-EA tidak membuka order sendiri sampai `InpAutoTrade = true`.
+EA tidak membuka order sendiri sampai tombol **AUTO** di dashboard dinyalakan.
 
 ---
 
@@ -147,7 +147,6 @@ Pilih lewat `InpTF3Rule`:
 | `InpFastMA / InpSlowMA` | 5 / 10 | MA High / MA Low |
 | `InpTrendEMA` | 50 | EMA trend |
 | `InpCsmBodyATR` | 1.2 | Ambang candle momentum |
-| `InpAutoTrade` | false | false = semi-auto, true = auto entry |
 | `InpLotMode / InpLot / InpRiskPercent` | Fixed / 0.01 / 1% | Lot |
 | `InpSLATR / InpRR` | 1.5 / 1.5 | SL berbasis ATR & RR |
 | `InpMaxSpread` | 50 pts | Filter spread XAUUSD |
@@ -185,8 +184,9 @@ Tombol di bawah kolom **Close All** (klik untuk eksekusi semi-auto):
 | BUY | Buka posisi BUY |
 | SELL | Buka posisi SELL |
 | CLOSE | Tutup semua posisi (Close All) |
+| AUTO | Nyalakan/matikan auto-trade (hijau = ON, abu-abu = OFF) |
 
-Kolom **Allow** menampilkan `✓` (hijau) jika auto-trade aktif dan tidak diblokir, `✗` (merah) jika tidak.
+Kolom **Allow** menampilkan `✓` (hijau) jika tombol **AUTO** nyala dan tidak diblokir, `✗` (merah) jika tidak.
 
 Kolom **Signals** menampilkan sinyal gabungan: `BUY` / `SELL` / `PREP BUY` / `PREP SELL` / `--`.
 
@@ -225,7 +225,7 @@ Input tampilan:
 
 - **Strategy Tester** (Ctrl+R): pilih XAUUSD, TF chart bebas, model
   *Every tick based on real ticks*.
-- Mulai dengan `InpAutoTrade = false` di akun demo.
+- Mulai dengan tombol **AUTO** mati di akun demo.
 - Cek tab **Experts** untuk log sinyal/error.
 
 ---

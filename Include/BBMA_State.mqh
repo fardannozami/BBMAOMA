@@ -46,6 +46,7 @@ bool g_eventFinalSell = false;
 int    g_day              = -1;
 double g_dayStartBalance  = 0.0;
 bool   g_blocked          = false;
+bool   g_autoTrade        = false;  // Auto-trade toggle (diaktifkan via tombol AUTO di dashboard)
 
 //--- Trading / UI objects
 CTrade       g_trade;

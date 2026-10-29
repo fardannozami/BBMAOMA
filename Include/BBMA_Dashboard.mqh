@@ -6,6 +6,10 @@
 #ifndef BBMA_DASHBOARD_MQH
 #define BBMA_DASHBOARD_MQH
 
+double g_dashMaxDD = 0.0;
+double g_dashMaxGain = 0.0;
+int    g_dashDay = -1;
+
 //+------------------------------------------------------------------+
 //| Panel primitives                                                 |
 //+------------------------------------------------------------------+
@@ -20,7 +24,7 @@ void CreateLabel(const string name, const int x, const int y, const int size, co
    ObjectSetInteger(0, name, OBJPROP_ANCHOR, ANCHOR_LEFT_UPPER);
    ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
    ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
-   ObjectSetString(0, name, OBJPROP_FONT, "Consolas");
+   ObjectSetString(0, name, OBJPROP_FONT, "Arial");
   }
 
 void CreateCell(const string name, const int x, const int y, const int w, const int h,
@@ -41,7 +45,7 @@ void CreateCell(const string name, const int x, const int y, const int w, const 
    ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
    ObjectSetInteger(0, name, OBJPROP_ANCHOR, ANCHOR_LEFT_UPPER);
    ObjectSetString(0, name, OBJPROP_TEXT, text);
-   ObjectSetString(0, name, OBJPROP_FONT, "Consolas");
+   ObjectSetString(0, name, OBJPROP_FONT, "Arial");
   }
 
 void CreateButton(const string name, const string text, const int x, const int y,
@@ -61,7 +65,7 @@ void CreateButton(const string name, const string text, const int x, const int y
    ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
    ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
    ObjectSetString(0, name, OBJPROP_TEXT, text);
-   ObjectSetString(0, name, OBJPROP_FONT, "Consolas");
+   ObjectSetString(0, name, OBJPROP_FONT, "Arial");
   }
 
 //+------------------------------------------------------------------+
@@ -71,12 +75,12 @@ int DashSlot(const int col)
   {
    switch(col)
      {
-      case 0: return -1; // W1
-      case 1: return 0;  // D1
-      case 2: return 1;  // H4
-      case 3: return 2;  // H1
-      case 4: return 3;  // M15
-      case 5: return -1; // M5
+      case 1: return -1; // W1
+      case 2: return 0;  // D1
+      case 3: return 1;  // H4
+      case 4: return 2;  // H1
+      case 5: return 3;  // M15
+      case 6: return -1; // M5
      }
    return -1;
   }
@@ -127,8 +131,8 @@ void CreateDashboard()
    ObjectSetInteger(0, panel, OBJPROP_CORNER, InpPanelCorner);
    ObjectSetInteger(0, panel, OBJPROP_XDISTANCE, x);
    ObjectSetInteger(0, panel, OBJPROP_YDISTANCE, y);
-   ObjectSetInteger(0, panel, OBJPROP_XSIZE, 760);
-   ObjectSetInteger(0, panel, OBJPROP_YSIZE, 120);
+   ObjectSetInteger(0, panel, OBJPROP_XSIZE, 1040);
+   ObjectSetInteger(0, panel, OBJPROP_YSIZE, 145);
    ObjectSetInteger(0, panel, OBJPROP_BGCOLOR, C'30,32,36');
    ObjectSetInteger(0, panel, OBJPROP_BORDER_TYPE, BORDER_FLAT);
    ObjectSetInteger(0, panel, OBJPROP_COLOR, C'80,84,92');
@@ -136,15 +140,15 @@ void CreateDashboard()
    ObjectSetInteger(0, panel, OBJPROP_SELECTABLE, false);
    ObjectSetInteger(0, panel, OBJPROP_HIDDEN, true);
 
-   CreateLabel(g_prefix + "TITLE", x + 14, y + 7, InpFontSize + 1, clrWhite);
+   CreateLabel(g_prefix + "TITLE", x + 335, y + 6, InpFontSize + 2, clrWhite);
 
    //--- header row background (visual strip only)
    ObjectCreate(0, g_prefix + "H_BG", OBJ_RECTANGLE_LABEL, 0, 0, 0);
    ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_CORNER, InpPanelCorner);
    ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_XDISTANCE, x + 14);
-   ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_YDISTANCE, y + 30);
-   ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_XSIZE, 746);
-   ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_YSIZE, 20);
+   ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_YDISTANCE, y + 40);
+   ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_XSIZE, 1012);
+   ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_YSIZE, 34);
    ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_BGCOLOR, C'60,64,70');
    ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_BORDER_TYPE, BORDER_FLAT);
    ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_BORDER_COLOR, C'50,52,56');
@@ -153,19 +157,19 @@ void CreateDashboard()
    ObjectSetInteger(0, g_prefix + "H_BG", OBJPROP_HIDDEN, true);
 
    //--- header row (label text on top)
-   int hx[6] = { x + 16, x + 116, x + 156, x + 196, x + 236, x + 276 };
-   int hw[6] = { 90, 40, 40, 40, 40, 45 };
-   string hd[6] = { "SYMBOLS", "W1", "D1", "H4", "H1", "M15" };
-   for(int c = 0; c < 6; c++)
+   int hx[7] = { x + 16, x + 176, x + 251, x + 326, x + 401, x + 476, x + 551 };
+   int hw[7] = { 175, 75, 75, 75, 75, 75, 78 };
+   string hd[7] = { "SYMBOLS", "W1", "D1", "H4", "H1", "M15", "M5" };
+   for(int c = 0; c < 7; c++)
      {
       string bg = StringFormat("%sH%d_BG", g_prefix, c);
       ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
       ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
       ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, hx[c] - 2);
-      ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 30);
+      ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 40);
       ObjectSetInteger(0, bg, OBJPROP_XSIZE, hw[c]);
-      ObjectSetInteger(0, bg, OBJPROP_YSIZE, 20);
-      ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'60,64,70');
+      ObjectSetInteger(0, bg, OBJPROP_YSIZE, 34);
+      ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, (c == 4 ? C'128,0,0' : C'128,128,128'));
       ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
       ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
       ObjectSetInteger(0, bg, OBJPROP_BACK, false);
@@ -173,20 +177,20 @@ void CreateDashboard()
       ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
 
       string nm = StringFormat("%sH%d", g_prefix, c);
-      CreateLabel(nm, hx[c], y + 33, InpFontSize, clrSilver);
+      CreateLabel(nm, hx[c], y + 49, InpFontSize, clrWhite);
       ObjectSetString(0, nm, OBJPROP_TEXT, hd[c]);
       ObjectSetInteger(0, nm, OBJPROP_XSIZE, hw[c] - 4);
      }
 
-   //--- M5 + Close All header
+   //--- Close All, Allow and Signals headers
    {
     string bg = g_prefix + "H6_BG";
     ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
     ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
-    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 319);
-    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 30);
-    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 35);
-    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 20);
+    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 629);
+    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 40);
+    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 225);
+    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 34);
     ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'60,64,70');
     ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
     ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
@@ -194,18 +198,18 @@ void CreateDashboard()
     ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
     ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
    }
-   CreateLabel(g_prefix + "H6", x + 321, y + 33, InpFontSize, clrSilver);
-   ObjectSetString(0, g_prefix + "H6", OBJPROP_TEXT, "M5");
-   ObjectSetInteger(0, g_prefix + "H6", OBJPROP_XSIZE, 31);
+   CreateLabel(g_prefix + "H6", x + 631, y + 49, InpFontSize, clrWhite);
+   ObjectSetString(0, g_prefix + "H6", OBJPROP_TEXT, "Close All");
+   ObjectSetInteger(0, g_prefix + "H6", OBJPROP_XSIZE, 221);
 
    {
     string bg = g_prefix + "HCA_BG";
     ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
     ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
-    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 354);
-    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 30);
-    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 140);
-    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 20);
+    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 854);
+    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 40);
+    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 75);
+    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 34);
     ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'60,64,70');
     ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
     ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
@@ -213,18 +217,18 @@ void CreateDashboard()
     ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
     ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
    }
-   CreateLabel(g_prefix + "HCA", x + 356, y + 33, InpFontSize, clrSilver);
-   ObjectSetString(0, g_prefix + "HCA", OBJPROP_TEXT, "Close All");
-   ObjectSetInteger(0, g_prefix + "HCA", OBJPROP_XSIZE, 136);
+   CreateLabel(g_prefix + "HCA", x + 856, y + 49, InpFontSize, clrWhite);
+   ObjectSetString(0, g_prefix + "HCA", OBJPROP_TEXT, "Allow");
+   ObjectSetInteger(0, g_prefix + "HCA", OBJPROP_XSIZE, 71);
 
    {
     string bg = g_prefix + "HA_BG";
     ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
     ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
-    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 494);
-    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 30);
-    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 60);
-    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 20);
+    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 929);
+    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 40);
+    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 111);
+    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 34);
     ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'60,64,70');
     ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
     ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
@@ -232,28 +236,9 @@ void CreateDashboard()
     ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
     ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
    }
-   CreateLabel(g_prefix + "HA", x + 496, y + 33, InpFontSize, clrSilver);
-   ObjectSetString(0, g_prefix + "HA", OBJPROP_TEXT, "Allow");
-   ObjectSetInteger(0, g_prefix + "HA", OBJPROP_XSIZE, 56);
-
-   {
-    string bg = g_prefix + "HS_BG";
-    ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
-    ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
-    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 554);
-    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 30);
-    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 206);
-    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 20);
-    ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'60,64,70');
-    ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
-    ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
-    ObjectSetInteger(0, bg, OBJPROP_BACK, false);
-    ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
-    ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
-   }
-   CreateLabel(g_prefix + "HS", x + 556, y + 33, InpFontSize, clrSilver);
-   ObjectSetString(0, g_prefix + "HS", OBJPROP_TEXT, "Signals");
-   ObjectSetInteger(0, g_prefix + "HS", OBJPROP_XSIZE, 202);
+   CreateLabel(g_prefix + "HA", x + 931, y + 49, InpFontSize, clrWhite);
+   ObjectSetString(0, g_prefix + "HA", OBJPROP_TEXT, "Signals");
+   ObjectSetInteger(0, g_prefix + "HA", OBJPROP_XSIZE, 107);
 
    //--- symbol row: background + text label
    {
@@ -261,9 +246,9 @@ void CreateDashboard()
     ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
     ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
     ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 14);
-    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 54);
-    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 90);
-    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 22);
+    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 74);
+    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 175);
+    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 35);
     ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'120,30,30');
     ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
     ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
@@ -271,20 +256,20 @@ void CreateDashboard()
     ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
     ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
    }
-   CreateLabel(g_prefix + "SYM", x + 16, y + 57, InpFontSize, clrWhite);
+   CreateLabel(g_prefix + "SYM", x + 16, y + 84, InpFontSize, clrWhite);
    ObjectSetString(0, g_prefix + "SYM", OBJPROP_TEXT, _Symbol);
-   ObjectSetInteger(0, g_prefix + "SYM", OBJPROP_XSIZE, 86);
+   ObjectSetInteger(0, g_prefix + "SYM", OBJPROP_XSIZE, 171);
 
    //--- TF cells row: background + text label
-   for(int c = 1; c < 6; c++)
+   for(int c = 1; c < 7; c++)
      {
       string bg = StringFormat("%sC%d_BG", g_prefix, c);
       ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
       ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
       ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, hx[c] - 2);
-      ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 54);
+      ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 74);
       ObjectSetInteger(0, bg, OBJPROP_XSIZE, hw[c]);
-      ObjectSetInteger(0, bg, OBJPROP_YSIZE, 22);
+      ObjectSetInteger(0, bg, OBJPROP_YSIZE, 35);
       ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'50,52,56');
       ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
       ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
@@ -293,44 +278,25 @@ void CreateDashboard()
       ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
 
       string nm = StringFormat("%sC%d", g_prefix, c);
-      CreateLabel(nm, hx[c], y + 57, InpFontSize, clrSilver);
+      CreateLabel(nm, hx[c], y + 84, InpFontSize, clrSilver);
       ObjectSetString(0, nm, OBJPROP_TEXT, "--");
       ObjectSetInteger(0, nm, OBJPROP_XSIZE, hw[c] - 4);
      }
 
-   {
-    string bg = g_prefix + "C6_BG";
-    ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
-    ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
-    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 319);
-    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 54);
-    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 35);
-    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 22);
-    ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'50,52,56');
-    ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
-    ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
-    ObjectSetInteger(0, bg, OBJPROP_BACK, false);
-    ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
-    ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
-   }
-   CreateLabel(g_prefix + "C6", x + 321, y + 57, InpFontSize, clrSilver);
-   ObjectSetString(0, g_prefix + "C6", OBJPROP_TEXT, "--");
-   ObjectSetInteger(0, g_prefix + "C6", OBJPROP_XSIZE, 31);
-
    //--- Close All buttons
-   CreateButton(g_prefix + "BTN_BUY",   "BUY",  x + 354, y + 54, 44, 22, C'0,110,70');
-   CreateButton(g_prefix + "BTN_SELL",  "SELL", x + 398, y + 54, 44, 22, C'150,40,40');
-   CreateButton(g_prefix + "BTN_CLOSE", "CLOSE",x + 442, y + 54, 48, 22, C'80,84,92');
+   CreateButton(g_prefix + "BTN_BUY",   "Buy",  x + 629, y + 74, 75, 35, C'0,150,0');
+   CreateButton(g_prefix + "BTN_SELL",  "Sell", x + 704, y + 74, 75, 35, C'220,0,0');
+   CreateButton(g_prefix + "BTN_CLOSE", "Close",x + 779, y + 74, 75, 35, C'128,128,128');
 
    //--- Allow + Signals row: background + text label
    {
     string bg = g_prefix + "CA_BG";
     ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
     ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
-    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 494);
-    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 54);
-    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 60);
-    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 22);
+    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 854);
+    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 74);
+    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 75);
+    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 35);
     ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'50,52,56');
     ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
     ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
@@ -338,18 +304,18 @@ void CreateDashboard()
     ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
     ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
    }
-   CreateLabel(g_prefix + "CA", x + 496, y + 57, InpFontSize, clrTomato);
+   CreateLabel(g_prefix + "CA", x + 856, y + 84, InpFontSize, clrTomato);
    ObjectSetString(0, g_prefix + "CA", OBJPROP_TEXT, "\x2717");
-   ObjectSetInteger(0, g_prefix + "CA", OBJPROP_XSIZE, 56);
+   ObjectSetInteger(0, g_prefix + "CA", OBJPROP_XSIZE, 71);
 
    {
     string bg = g_prefix + "CS_BG";
     ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
     ObjectSetInteger(0, bg, OBJPROP_CORNER, InpPanelCorner);
-    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 554);
-    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 54);
-    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 206);
-    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 22);
+    ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, x + 929);
+    ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, y + 74);
+    ObjectSetInteger(0, bg, OBJPROP_XSIZE, 111);
+    ObjectSetInteger(0, bg, OBJPROP_YSIZE, 35);
     ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, C'50,52,56');
     ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
     ObjectSetInteger(0, bg, OBJPROP_BORDER_COLOR, C'50,52,56');
@@ -357,13 +323,19 @@ void CreateDashboard()
     ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
     ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
    }
-   CreateLabel(g_prefix + "CS", x + 556, y + 57, InpFontSize, clrSilver);
+   CreateLabel(g_prefix + "CS", x + 931, y + 84, InpFontSize, clrSilver);
    ObjectSetString(0, g_prefix + "CS", OBJPROP_TEXT, "--");
-   ObjectSetInteger(0, g_prefix + "CS", OBJPROP_XSIZE, 202);
+   ObjectSetInteger(0, g_prefix + "CS", OBJPROP_XSIZE, 107);
 
    //--- footer status lines
-   CreateLabel(g_prefix + "F1", x + 14, y + 82, InpFontSize, clrSilver);
-   CreateLabel(g_prefix + "F2", x + 14, y + 98, InpFontSize, clrSilver);
+   CreateLabel(g_prefix + "F1", x + 465, y + 121, InpFontSize, clrSilver);
+   ObjectSetInteger(0, g_prefix + "F1", OBJPROP_SELECTABLE, true);
+   string riskNames[16] = { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15" };
+   for(int r = 0; r < 16; r++)
+     {
+      CreateLabel(g_prefix + riskNames[r], x, y + 150 + r * 34, (r == 0 ? InpFontSize + 2 : InpFontSize), (r == 0 || r == 15 ? clrLime : clrWhite));
+      ObjectSetString(0, g_prefix + riskNames[r], OBJPROP_FONT, "Consolas");
+     }
 
    UpdateDashboard();
   }
@@ -377,10 +349,10 @@ void UpdateDashboard()
       return;
 
    ObjectSetString(0, g_prefix + "TITLE", OBJPROP_TEXT,
-                   StringFormat("BBMA Oma Ally Analyzer Dashboard EA  %s", _Symbol));
+                   "BBMA Oma Ally Analyzer Dashboard EA V1.27");
 
    //--- TF cells
-   for(int c = 1; c < 6; c++)
+   for(int c = 1; c < 7; c++)
      {
       int slot = DashSlot(c);
       string text; color bg, fg;
@@ -391,22 +363,13 @@ void UpdateDashboard()
       ObjectSetInteger(0, nm, OBJPROP_COLOR, fg);
       ObjectSetInteger(0, bgnm, OBJPROP_BGCOLOR, bg);
      }
-   {
-    int slot = DashSlot(5); // M5
-    string text; color bg, fg;
-    TFCellStatus(slot, text, bg, fg);
-    ObjectSetString(0, g_prefix + "C6", OBJPROP_TEXT, text);
-    ObjectSetInteger(0, g_prefix + "C6", OBJPROP_COLOR, fg);
-    ObjectSetInteger(0, g_prefix + "C6_BG", OBJPROP_BGCOLOR, bg);
-   }
-
    //--- Symbol cell (always visible)
    ObjectSetString(0, g_prefix + "SYM", OBJPROP_TEXT, _Symbol);
    ObjectSetInteger(0, g_prefix + "SYM", OBJPROP_COLOR, clrWhite);
    ObjectSetInteger(0, g_prefix + "SYM_BG", OBJPROP_BGCOLOR, C'120,30,30');
 
    //--- Allow
-   bool allowed = (InpAutoTrade && !g_blocked);
+   bool allowed = (g_autoTrade && !g_blocked);
    ObjectSetString(0, g_prefix + "CA", OBJPROP_TEXT, (allowed ? "\x2713" : "\x2717"));
    ObjectSetInteger(0, g_prefix + "CA", OBJPROP_COLOR, (allowed ? clrLime : clrTomato));
    ObjectSetInteger(0, g_prefix + "CA_BG", OBJPROP_BGCOLOR, C'50,52,56');
@@ -423,34 +386,66 @@ void UpdateDashboard()
    ObjectSetInteger(0, g_prefix + "CS_BG", OBJPROP_BGCOLOR, C'50,52,56');
 
    //--- footer
-   string f1 = StringFormat("%s  |  TFs: %s  |  %s",
-                            (InpAutoTrade ? "Full Auto Mode" : "Semi Auto Mode"),
-                            TFListStr(),
-                            (InpConfirmMode == CONFIRM_3TF ? "3TF" : "2TF"));
+   string f1 = (g_autoTrade ? "Full Auto Mode" : "Semi Auto Mode");
    ObjectSetString(0, g_prefix + "F1", OBJPROP_TEXT, f1);
-   ObjectSetInteger(0, g_prefix + "F1", OBJPROP_COLOR, (InpAutoTrade ? clrLime : C'180,184,190'));
+   ObjectSetInteger(0, g_prefix + "F1", OBJPROP_COLOR, (g_autoTrade ? clrLime : C'180,184,190'));
 
-   string f2;
-   color f2c;
-   if(!g_configOk)
+   //--- Account and daily risk information below the trading dashboard
+   MqlDateTime nowParts;
+   TimeToStruct(TimeCurrent(), nowParts);
+   int dayKey = nowParts.year * 1000 + nowParts.day_of_year;
+   if(g_dashDay != dayKey)
      {
-      int required = (InpConfirmMode == CONFIRM_3TF ? 3 : 2);
-      f2 = StringFormat("CONFIG ERROR: %s mode needs %d TF ON (now %d)",
-                        (InpConfirmMode == CONFIRM_3TF ? "3TF" : "2TF"), required, g_count);
-      f2c = clrTomato;
+      g_dashDay = dayKey;
+      g_dashMaxDD = 0.0;
+      g_dashMaxGain = 0.0;
      }
-   else if(g_blocked)
+   double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   double dailyPct = DailyPct();
+   if(dailyPct < 0.0 && -dailyPct > g_dashMaxDD) g_dashMaxDD = -dailyPct;
+   if(dailyPct > g_dashMaxGain) g_dashMaxGain = dailyPct;
+   double dailyAmount = equity - g_dayStartBalance;
+   datetime dayStart = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+   datetime dayEnd = dayStart + 86400;
+   double closedDaily = 0.0;
+   if(HistorySelect(dayStart, TimeCurrent()))
      {
-      f2 = "Risk Management Controller is Inactive";
-      f2c = clrTomato;
+      for(int deal = 0; deal < HistoryDealsTotal(); deal++)
+        {
+         ulong ticket = HistoryDealGetTicket(deal);
+         if(ticket == 0) continue;
+         closedDaily += HistoryDealGetDouble(ticket, DEAL_PROFIT)
+                      + HistoryDealGetDouble(ticket, DEAL_SWAP)
+                      + HistoryDealGetDouble(ticket, DEAL_COMMISSION);
+        }
      }
-   else
+   double maxAmount = (g_dayStartBalance > 0.0 ? g_dayStartBalance * InpDailyLossPct / 100.0 : 0.0);
+   double profitToLock = (InpDailyTargetPct > 0.0 && g_dayStartBalance > 0.0 ? g_dayStartBalance * InpDailyTargetPct / 100.0 : 0.0);
+   string currency = AccountInfoString(ACCOUNT_CURRENCY);
+   string riskText[16];
+   riskText[0] = "Risk Management Controller is Active";
+   if(g_blocked) riskText[0] = "Risk Management Controller is Inactive";
+   riskText[1] = "Counters will be reset on Next Day Start.";
+   riskText[2] = StringFormat("From : %s To : %s", TimeToString(dayStart, TIME_DATE), TimeToString(dayEnd, TIME_DATE));
+   riskText[3] = "ACCOUNT DRAWDOWN =================";
+   riskText[4] = StringFormat("Account Initial Balance                         : %.2f %s", g_dayStartBalance, currency);
+   riskText[5] = StringFormat("Current Account Equity                          : %.2f %s", equity, currency);
+   riskText[6] = StringFormat("Current Balance Variation                       : %.2f%%", (g_dayStartBalance > 0.0 ? (equity-g_dayStartBalance)/g_dayStartBalance*100.0 : 0.0));
+   riskText[7] = "DAILY DRAWDOWN =====================";
+   riskText[8] = StringFormat("Today Starting Balance                         : %.2f %s", g_dayStartBalance, currency);
+   riskText[9] = StringFormat("DrawDown Max Threshold                         : %.2f %% [ Today Highest DD : %.2f%% ]", InpDailyLossPct, g_dashMaxDD);
+   riskText[10] = StringFormat("DrawDown Max Amount                            : -%.2f %s", maxAmount, currency);
+   riskText[11] = StringFormat("Closed Daily PnL                               : %.2f %s", closedDaily, currency);
+   riskText[12] = StringFormat("Total Daily PnL                                : %.2f %s (%.2f %%)", dailyAmount, currency, dailyPct);
+   riskText[13] = StringFormat("Today Highest Gain                             : %.2f%%", g_dashMaxGain);
+   riskText[14] = StringFormat("Profit to lock                                 : %.2f %s", profitToLock, currency);
+   riskText[15] = (g_blocked ? ">>> Max Threshold Hit. Trading is blocked." : ">>> Max Threshold Not Hit. Trade is allowed.");
+   for(int r = 0; r < 16; r++)
      {
-      f2 = "Risk Management Controller is Active";
-      f2c = clrLime;
+      string name = StringFormat("%sR%d", g_prefix, r);
+      ObjectSetString(0, name, OBJPROP_TEXT, riskText[r]);
+      ObjectSetInteger(0, name, OBJPROP_COLOR, (r == 0 || r == 15 ? clrLime : clrWhite));
      }
-   ObjectSetString(0, g_prefix + "F2", OBJPROP_TEXT, f2);
-   ObjectSetInteger(0, g_prefix + "F2", OBJPROP_COLOR, f2c);
 
    ChartRedraw(0);
   }

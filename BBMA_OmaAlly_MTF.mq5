@@ -4,7 +4,7 @@
 //|  Selectable TFs: 1D / 4H / 1H / 15M  |  2TF or 3TF confirmation  |
 //+------------------------------------------------------------------+
 #property copyright "Rebuild for personal use"
-#property version   "1.20"
+#property version   "1.27"
 #property description "BBMA Oma Ally MTF for XAUUSD - selectable 1D/4H/1H/15M"
 #property description "TF1: trend + re-entry | TF2: gap/rejection | TF3: extreme/MHV/direction/full setup"
 #property description "2TF = final at 2 TFs, 3TF = final at 3 TFs. Dashboard + alerts + optional auto-trade."
@@ -62,7 +62,6 @@ input string InpTelegramChat     = "";    // Telegram chat id
 input bool   InpAlertPreparation = true;  // Also alert 2TF preparation
 
 input group "=== TRADING ==="
-input bool            InpAutoTrade     = false;    // Auto-trade (false = semi-auto)
 input long            InpMagic         = 20261027; // Magic number
 input int             InpSlippage      = 20;       // Slippage (points)
 input ENUM_LOT_MODE   InpLotMode       = LOT_FIXED;// Lot mode
@@ -87,8 +86,8 @@ input double          InpDailyTargetPct= 0.0;         // Daily target % (0 = off
 input group "=== DASHBOARD ==="
 input bool             InpShowPanel    = true;
 input ENUM_BASE_CORNER InpPanelCorner  = CORNER_LEFT_UPPER;
-input int              InpPanelX       = 20;
-input int              InpPanelY       = 30;
+input int              InpPanelX       = 4;
+input int              InpPanelY       = 12;
 input int              InpFontSize     = 9;
 
 //+------------------------------------------------------------------+
@@ -147,7 +146,7 @@ int OnInit()
 
    Print("BBMA Oma Ally MTF initialized: ", _Symbol, " | TFs=", TFListStr(),
          " | mode=", (InpConfirmMode == CONFIRM_3TF ? "3TF" : "2TF"),
-         " | auto=", (InpAutoTrade ? "true" : "false"));
+         " | auto=", (g_autoTrade ? "true" : "false"));
 
    return INIT_SUCCEEDED;
   }
@@ -180,17 +179,17 @@ void OnTick()
 
    ManagePositions();
 
-   //--- one-shot final signals (auto entry only when InpAutoTrade is on)
+   //--- one-shot final signals (auto entry only when g_autoTrade is on)
    if(g_eventFinalBuy)
      {
-      if(InpAutoTrade)
+      if(g_autoTrade)
          OpenTrade(1);
       g_eventFinalBuy = false;
      }
 
    if(g_eventFinalSell)
      {
-      if(InpAutoTrade)
+      if(g_autoTrade)
          OpenTrade(-1);
       g_eventFinalSell = false;
      }
@@ -229,6 +228,12 @@ void OnChartEvent(const int id, const long &lparam, const double &dparam, const 
      {
       CloseAll();
       ObjectSetInteger(0, sparam, OBJPROP_STATE, false);
+      ChartRedraw(0);
+     }
+   else if(sparam == g_prefix + "F1")
+     {
+      g_autoTrade = !g_autoTrade;
+      UpdateDashboard();
       ChartRedraw(0);
      }
   }
