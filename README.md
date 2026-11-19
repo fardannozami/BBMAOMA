@@ -46,9 +46,6 @@ Mau ubah apa → buka file mana:
 > Catatan MQL5: variabel `input` hanya boleh dideklarasikan di file `.mq5` utama,
 > jadi semua konfigurasi tetap terpusat di `BBMA_OmaAlly_MTF.mq5`.
 
-Lokasi:
-`C:\Users\Xcode\AppData\Roaming\MetaQuotes\Terminal\E3E3B02889D32F38295D39BF94B6AD4A\MQL5\Experts\BBMA_OmaAlly_MTF\`
-
 ---
 
 ## 2. Cara memasang
@@ -83,8 +80,16 @@ Aktifkan TF lewat input:
 
 **Aturan jumlah TF:**
 
-- Mode **2TF** → harus aktif **tepat 2 TF**.
-- Mode **3TF** → harus aktif **tepat 3 TF**.
+- Mode **2TF** → minimal **2 TF** aktif.
+- Mode **3TF** → minimal **3 TF** aktif.
+
+TF ekstra boleh tetap aktif. Semua TF yang ON dianalisis dan tampil di
+dashboard, tetapi hanya TF teratas yang masuk rantai konfirmasi:
+
+- mode 2TF → 2 TF tertinggi (MAJOR + SECOND), TF ketiga diabaikan (`g_thirdIdx = -1`).
+- mode 3TF → 3 TF tertinggi (MAJOR + SECOND + THIRD).
+
+`CONFIG ERROR` hanya muncul jika TF aktif **kurang** dari kebutuhan mode.
 
 TF yang aktif otomatis diurutkan dari besar ke kecil:
 
@@ -101,13 +106,14 @@ TF yang aktif otomatis diurutkan dari besar ke kecil:
 | 2TF | 4H + 1H | 4H / 1H / — |
 | 2TF | 1D + 4H | 1D / 4H / — |
 | 2TF | 1H + 15M | 1H / 15M / — |
+| 2TF | 4H + 1H + 15M | 4H / 1H / — (15M hanya untuk dashboard) |
 | 3TF | 4H + 1H + 15M | 4H / 1H / 15M (default) |
 | 3TF | 1D + 4H + 1H | 1D / 4H / 1H |
 | 3TF | 1D + 1H + 15M | 1D / 1H / 15M |
 
-Kalau jumlah TF tidak sesuai mode, dashboard menampilkan
-`CONFIG ERROR` dan EA tidak memberi sinyal/trade. Contoh:
-mode 3TF tetapi 4 TF aktif → matikan salah satu.
+Kalau jumlah TF aktif kurang dari kebutuhan mode, EA menulis
+`CONFIG ERROR` ke tab Experts dan tidak memberi sinyal/trade.
+Contoh: mode 3TF tetapi hanya 2 TF aktif → nyalakan satu TF lagi.
 
 ---
 
@@ -190,7 +196,7 @@ Kolom **Allow** menampilkan `✓` (hijau) jika tombol **AUTO** nyala dan tidak d
 
 Kolom **Signals** menampilkan sinyal gabungan: `BUY` / `SELL` / `PREP BUY` / `PREP SELL` / `--`.
 
-Baris bawah menampilkan mode (`Full Auto Mode` hijau / `Semi Auto Mode` abu-abu), TF yang aktif, serta status Risk Management Controller (`Active` hijau / `Inactive` merah, atau `CONFIG ERROR` jika jumlah TF ON tidak sesuai mode 2TF/3TF).
+Baris bawah menampilkan mode (`Full Auto Mode` hijau / `Semi Auto Mode` abu-abu), TF yang aktif, serta status Risk Management Controller (`Active` hijau / `Inactive` merah). `CONFIG ERROR` hanya dicetak ke tab Experts saat TF aktif kurang dari kebutuhan mode.
 
 Input tampilan:
 

@@ -117,7 +117,7 @@ int OnInit()
    if(!g_configOk)
      {
       int required = (InpConfirmMode == CONFIRM_3TF ? 3 : 2);
-      string msg = StringFormat("CONFIG ERROR: %s mode requires exactly %d enabled TFs, but %d are ON. Enable/disable 1D/4H/1H/15M accordingly.",
+      string msg = StringFormat("CONFIG ERROR: %s mode requires at least %d enabled TFs, but only %d are ON. Enable another TF (1D/4H/1H/15M).",
                                 (InpConfirmMode == CONFIRM_3TF ? "3TF" : "2TF"),
                                 required, g_count);
       Print(msg);

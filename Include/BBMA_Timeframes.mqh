@@ -49,12 +49,15 @@ void BuildTFList()
          g_enabled[g_count++] = i;
      }
 
+   //--- Extra enabled TFs are allowed: they are still analysed for the
+   //    dashboard, but only the two (2TF) or three (3TF) highest ones
+   //    take part in the confirmation chain.
    int required = (InpConfirmMode == CONFIRM_3TF ? 3 : 2);
-   g_configOk = (g_count == required);
+   g_configOk = (g_count >= required);
 
    g_majorIdx  = (g_count > 0 ? g_enabled[0] : -1);
    g_secondIdx = (g_count > 1 ? g_enabled[1] : -1);
-   g_thirdIdx  = (g_count > 2 ? g_enabled[2] : -1);
+   g_thirdIdx  = (required == 3 && g_count > 2 ? g_enabled[2] : -1);
 
    Print("TF config: count=", g_count, " required=", required,
          " ok=", (g_configOk ? "true" : "false"));
