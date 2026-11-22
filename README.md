@@ -157,13 +157,39 @@ Status pola ditentukan otomatis dari susunan timeframe aktif.
 | `InpFastMA / InpSlowMA` | 5 / 10 | MA High / MA Low |
 | `InpTrendEMA` | 50 | EMA trend |
 | `InpSetupLookback` | 20 | Batas bar untuk mencari urutan setup |
-| `InpLotMode / InpLot / InpRiskPercent` | Fixed / 0.01 / 1% | Lot |
-| `InpSLATR / InpRR` | 1.5 / 1.5 | SL berbasis ATR & RR |
+| `InpFilterHigherTF` | true | Hanya entry searah tren TF di atas MAJOR (close vs EMA50). Contoh: MAJOR 4H → filter 1D |
+| `InpAutoTrade` | false | Full auto sejak EA dipasang (sama dengan tombol AUTO). Di Strategy Tester selalu ON |
+| `InpLotMode / InpLot / InpRiskPercent` | Fixed / 0.01 / 1% | Lot. Compounding = risk % dari balance berdasarkan jarak SL, dibagi rata ke semua order layering |
+| `InpSLATR / InpRR` | 1.5 / 1.5 | SL berbasis ATR MAJOR TF & RR |
 | `InpMaxSpread` | 50 pts | Filter spread XAUUSD |
-| `InpCloseMode` | BB | Exit: MA / BB / reverse signal |
+| `InpMaxPositions` | 0 | Batas posisi terbuka (0 = tanpa batas). Tetap hanya 1 basket (1 arah) sekaligus |
+| `InpOrderMode` | Single | Order types: Single (SL/TP) / Instant + Limit / Instant + Stop / Instant + Stop + Limit |
+| `InpLevels` | 5 | Jumlah pending order per jenis (limit dan/atau stop) |
+| `InpDistancePips` | 10 | Jarak antar pending order. 1 pip = 10 point (XAUUSD 2 digit: 10 pip = $1.00) |
+| `InpLayerSLTP` | false | Layering: pasang SL/TP juga di setiap order. Default false sesuai guidebook (TP/SL hanya untuk Single) |
+| `InpPendingExpiryHours` | 24 | Hapus pending yang belum tersentuh jika tidak ada posisi terbuka |
+| `InpCloseMode` | BB | Exit: MA / BB / reverse signal (lihat bagian Exit) |
 | `InpCutLossOnCSM` | true | Cut loss CSM + break EMA50 di SECOND TF |
-| `InpDailyLossPct` | 3% | Batas rugi harian |
-| `InpFridayClose` | true | Tutup posisi Jumat jam 22 server |
+| `InpSessionBufferMin` | 60 | Tidak ada entry otomatis N menit setelah sesi buka & sebelum sesi tutup |
+| `InpDailyTargetPct` | 0 | Target harian % (0 = off). Tercapai → close all, stop sampai besok |
+| `InpDailyLossPct` | 3% | Batas rugi harian. Tercapai → close all, stop sampai besok |
+| `InpFridayClose` | true | Tutup semua posisi & pending menjelang sesi Jumat tutup (fallback `InpFridayHour`) |
+| `InpTrailStartPct / InpTrailLockPct` | 0 / 0 | Trailing %: saat floating profit basket ≥ Start % balance, kunci profit; level kunci ikut naik (peak − (Start − Lock)) |
+
+Pemetaan dari preset EA SharpShooter (`xau.set`):
+
+| SharpShooter | EA ini |
+|---|---|
+| `AlertD1/H4/H1/M15` | `InpUseD1/H4/H1/M15` |
+| `OpenPos` (2TF/3TF) | `InpConfirmMode` |
+| `FilterHigherTF` | `InpFilterHigherTF` |
+| `Compounding / RiskPerTrade / RiskRatio / LotStart` | `InpLotMode / InpRiskPercent / InpRR / InpLot` |
+| `OrderTypes2` | `InpOrderMode` (0 Single, 1 +Limit, 2 +Stop, 3 +Stop+Limit) |
+| `CloseAtBB` | `InpCloseMode` (0 MA, 1 BB, 2 Reverse) |
+| `Levels / base_distance / maxPos` | `InpLevels / InpDistancePips / InpMaxPositions` |
+| `Timer` | `InpSessionBufferMin` |
+| `DailyTargetPercent / DailyLossPercent / Stop_On_CloseMarket` | `InpDailyTargetPct / InpDailyLossPct / InpFridayClose` |
+| `StartTrailPerc / ProfitToLock` | `InpTrailStartPct / InpTrailLockPct` |
 
 ### Dashboard tabel (keterangan sinyal)
 
@@ -212,10 +238,16 @@ Input tampilan:
 | `InpFontSize` | 9 | Ukuran font panel |
 
 ### Exit
-- **At MA** — keluar saat harga kembali ke MA5/MA10.
+Semua aturan exit berlaku untuk seluruh basket (semua posisi + pending ditutup sekaligus).
+
+- **At MA** — BUY ditutup saat harga break MA10 Low MAJOR TF, SELL saat break MA5 High.
 - **At BB** — take profit di upper/lower Bollinger Bands MAJOR TF.
-- **At reverse signal** — keluar saat muncul sinyal final berlawanan.
+- **At reverse signal** — saat harga menyentuh top/low BB MAJOR, SL semua posisi dipindah ke
+  entry (SL+). Basket ditutup saat ada Extreme berlawanan di MAJOR, CSM berlawanan di SECOND,
+  atau sinyal final berlawanan.
 - **Cut-loss** — CSM melawan posisi + harga menembus EMA50 di SECOND TF.
+- **Trailing %** — lihat `InpTrailStartPct / InpTrailLockPct`.
+- Mode Single juga punya SL/TP (ATR × `InpSLATR`, RR `InpRR`).
 
 ---
 
@@ -234,7 +266,8 @@ Input tampilan:
 ## 7. Pengujian
 
 - **Strategy Tester** (Ctrl+R): pilih XAUUSD, TF chart bebas, model
-  *Every tick based on real ticks*.
+  *Every tick based on real ticks*. Auto-trade otomatis ON di tester; dashboard
+  hanya digambar di mode visual supaya optimasi cepat.
 - Mulai dengan tombol **AUTO** mati di akun demo.
 - Cek tab **Experts** untuk log sinyal/error.
 
