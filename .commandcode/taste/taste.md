@@ -1,0 +1,5 @@
+# Taste
+
+## Documentation
+
+- Prefers deep technical/reference documentation kept in a `docs/` folder (linked from the README) instead of being folded into the README itself. Confidence: 0.55

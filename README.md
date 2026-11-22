@@ -29,6 +29,7 @@ Folder `Include/` harus selalu ikut tersalin bersama file `.mq5`.
 | `Include/BBMA_Risk.mqh` | Batas rugi/target harian, tutup Jumat |
 | `Include/BBMA_Dashboard.mqh` | **Dashboard tabel** (mirror gambar referensi): simbol, status per TF (W1–M5), tombol BUY/SELL/CLOSE, Allow, Signals, dan baris Mode + Risk Management di bawah |
 | `BBMA_OmaAlly_MTF.ex5` | Hasil kompilasi (0 errors, 0 warnings) |
+| `docs/BBMA_LOGIC.md` | **Referensi teknis logika BBMA** (rumus pola, state machine, entry/exit) |
 | `README.md` | Panduan ini |
 
 Mau ubah apa → buka file mana:
@@ -138,6 +139,9 @@ Tiga timeframe aktif diurutkan dari tinggi ke rendah dan diperiksa untuk pola gu
 - **Diamond Setup**: Re-entry → Rejected EMA50/Gap → Extreme/MHV/Full Setup.
 
 Status pola ditentukan otomatis dari susunan timeframe aktif.
+
+> Rincian rumus tiap pola, urutan bar yang dievaluasi, state machine Full Setup,
+> dan semua kondisi entry/exit ada di **[docs/BBMA_LOGIC.md](docs/BBMA_LOGIC.md)**.
 
 ### Status
 - **PREP BUY/SELL** — 2 TF sudah konfirmasi, menunggu TF ketiga (mode 3TF).
