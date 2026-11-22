@@ -11,6 +11,13 @@
 void Notify(const string title, const string msg)
   {
    string text = title + " | " + _Symbol + " | " + msg;
+   if(g_isTester)
+     {
+      //--- no popups / push / WebRequest in the Strategy Tester
+      if(!MQLInfoInteger(MQL_OPTIMIZATION))
+         Print(text);
+      return;
+     }
    if(InpAlertPopup)
       Alert(text);
    if(InpAlertPush)

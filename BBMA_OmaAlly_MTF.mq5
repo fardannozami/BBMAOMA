@@ -4,7 +4,7 @@
 //|  Selectable TFs: W1 / D1 / H4 / H1 / M15 / M5                    |
 //+------------------------------------------------------------------+
 #property copyright "Rebuild for personal use"
-#property version   "1.27"
+#property version   "1.40"
 #property description "BBMA Oma Ally MTF for XAUUSD - selectable 1D/4H/1H/15M"
 #property description "BBMA Oma Ally: CSAK/CSM, Reentry, Extreme, MHV and multi-timeframe setups"
 #property description "Dashboard + alerts + optional auto-trade."
@@ -40,6 +40,7 @@ input bool              InpUseH1         = true;      // Enable 1H
 input bool              InpUseM15        = true;      // Enable 15M
 input bool              InpUseM5         = false;     // Enable 5M
 input ENUM_CONFIRM_MODE InpConfirmMode   = CONFIRM_3TF; // 2TF or 3TF
+input bool              InpFilterHigherTF = true;     // Filter: trade with the trend of the TF above major
 
 input group "=== BBMA PARAMETERS ==="
 input int    InpBBPeriod        = 20;     // Bollinger Bands period
@@ -60,6 +61,7 @@ input string InpTelegramChat     = "";    // Telegram chat id
 input bool   InpAlertPreparation = true;  // Also alert 2TF preparation
 
 input group "=== TRADING ==="
+input bool            InpAutoTrade     = false;    // Full auto at start (also via AUTO button)
 input long            InpMagic         = 20261027; // Magic number
 input int             InpSlippage      = 20;       // Slippage (points)
 input ENUM_LOT_MODE   InpLotMode       = LOT_FIXED;// Lot mode
@@ -70,16 +72,29 @@ input double          InpRR            = 1.5;      // Reward:Risk
 input int             InpMinSLPoints   = 150;      // Minimum SL (points)
 input int             InpStopBufferPts = 10;       // Extra stop buffer (points)
 input int             InpMaxSpread     = 50;       // Max spread (points, 0 = off)
-input int             InpMaxPositions  = 1;        // Max positions
-input bool            InpAllowLayering = false;    // Allow more than one position
+input int             InpMaxPositions  = 0;        // Max open positions (0 = no limit)
+
+input group "=== ORDER TYPES / LAYERING ==="
+input ENUM_ORDER_MODE InpOrderMode     = ORDERS_SINGLE; // Order types
+input int             InpLevels        = 5;        // Levels (pending orders per type)
+input double          InpDistancePips  = 10.0;     // Distance between pending orders (pips, 1 pip = 10 points)
+input bool            InpLayerSLTP     = false;    // Layering: also set SL/TP on every order
+input int             InpPendingExpiryHours = 24;  // Delete untouched pendings after N hours (0 = never)
 
 input group "=== EXIT MANAGEMENT ==="
-input ENUM_CLOSE_RULE InpCloseMode     = CLOSE_AT_BB; // Profit-taking rule
+input ENUM_CLOSE_RULE InpCloseMode     = CLOSE_AT_BB; // Where to close (major TF)
 input bool            InpCutLossOnCSM  = true;        // Cut loss on CSM + EMA50 break (TF2)
-input bool            InpFridayClose   = true;        // Close all on Friday
-input int             InpFridayHour    = 22;          // Friday close hour (server)
+
+input group "=== RISK MANAGEMENT ==="
+input int             InpSessionBufferMin = 60;       // No new trades N minutes after open / before close
+input double          InpDailyTargetPct= 0.0;         // Max daily target % (0 = off)
 input double          InpDailyLossPct  = 3.0;         // Max daily loss % (0 = off)
-input double          InpDailyTargetPct= 0.0;         // Daily target % (0 = off)
+input bool            InpFridayClose   = true;        // Close all before market close on Friday
+input int             InpFridayHour    = 22;          // Friday close hour if broker has no session info
+
+input group "=== TRAILING (PERCENTAGE) ==="
+input double          InpTrailStartPct = 0.0;         // Start trailing at floating profit % (0 = off)
+input double          InpTrailLockPct  = 0.0;         // Profit % to lock once started (0 = off)
 
 input group "=== DASHBOARD ==="
 input bool             InpShowPanel    = true;
@@ -132,15 +147,40 @@ int OnInit()
          return INIT_FAILED;
      }
 
+   //--- higher-TF filter slot that is not enabled needs its own handles
+   if(g_filterIdx >= 0 && !g_use[g_filterIdx])
+     {
+      if(!InitHandles(g_hFilter, g_tf[g_filterIdx]))
+         return INIT_FAILED;
+     }
+
+   g_isTester  = (bool)MQLInfoInteger(MQL_TESTER);
+   g_drawUI    = (!g_isTester || (bool)MQLInfoInteger(MQL_VISUAL_MODE));
+   g_autoTrade = (InpAutoTrade || g_isTester);   // the tester has no buttons to click
+
+   if(InpOrderMode != ORDERS_SINGLE && InpLevels < 0)
+     {
+      Print("Levels must be >= 0");
+      return INIT_PARAMETERS_INCORRECT;
+     }
+   if(InpTrailStartPct > 0.0 && InpTrailLockPct >= InpTrailStartPct)
+     {
+      Print("Profit to lock must be lower than Start trailing");
+      return INIT_PARAMETERS_INCORRECT;
+     }
+
    g_trade.SetExpertMagicNumber((ulong)InpMagic);
    g_trade.SetDeviationInPoints((ulong)InpSlippage);
    g_trade.SetTypeFillingBySymbol(_Symbol);
+   g_trade.LogLevel(g_isTester ? LOG_LEVEL_ERRORS : LOG_LEVEL_ALL);
 
    g_day = -1;
    g_dayStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
 
-   CreateDashboard();
-   EventSetMillisecondTimer(700);
+   if(g_drawUI)
+      CreateDashboard();
+   if(!g_isTester)
+      EventSetMillisecondTimer(700);
 
    Print("BBMA Oma Ally MTF initialized: ", _Symbol, " | TFs=", TFListStr(),
          " | mode=", (InpConfirmMode == CONFIRM_3TF ? "3TF" : "2TF"),
@@ -156,6 +196,7 @@ void OnDeinit(const int reason)
 
    for(int i = 0; i < BBMA_TF_SLOTS; i++)
       ReleaseHandles(g_h[i]);
+   ReleaseHandles(g_hFilter);
   }
 
 void OnTick()
@@ -171,6 +212,8 @@ void OnTick()
          if(g_use[i] && IsNewBar(g_tf[i], g_lastBar[i]))
             need = true;
         }
+      if(g_filterIdx >= 0 && !g_use[g_filterIdx] && IsNewBar(g_tf[g_filterIdx], g_lastFilterBar))
+         need = true;
       if(need)
          UpdateAnalysis();
      }
@@ -195,14 +238,16 @@ void OnTick()
    g_eventPrepBuy  = false;
    g_eventPrepSell = false;
 
-   UpdateDashboard();
+   if(g_drawUI)
+      UpdateDashboard();
   }
 
 void OnTimer()
   {
    UpdateDaily();
    ManagePositions();
-   UpdateDashboard();
+   if(g_drawUI)
+      UpdateDashboard();
   }
 
 void OnChartEvent(const int id, const long &lparam, const double &dparam, const string &sparam)
@@ -212,13 +257,13 @@ void OnChartEvent(const int id, const long &lparam, const double &dparam, const 
 
    if(sparam == g_prefix + "BTN_BUY")
      {
-      OpenTrade(1);
+      OpenTrade(1, true);
       ObjectSetInteger(0, sparam, OBJPROP_STATE, false);
       ChartRedraw(0);
      }
    else if(sparam == g_prefix + "BTN_SELL")
      {
-      OpenTrade(-1);
+      OpenTrade(-1, true);
       ObjectSetInteger(0, sparam, OBJPROP_STATE, false);
       ChartRedraw(0);
      }

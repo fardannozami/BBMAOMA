@@ -47,7 +47,21 @@ bool g_eventFinalSell = false;
 int    g_day              = -1;
 double g_dayStartBalance  = 0.0;
 bool   g_blocked          = false;
-bool   g_autoTrade        = false;  // Auto-trade toggle (diaktifkan via tombol AUTO di dashboard)
+bool   g_autoTrade        = false;  // Auto-trade toggle (input InpAutoTrade or the AUTO button)
+
+//--- Higher-TF trend filter (the slot just above the major TF)
+int        g_filterIdx    = -1;      // slot index, -1 = no filter
+TFHandles  g_hFilter;                // own handles when that slot is not enabled
+TFAnalysis g_aFilter;                // last analysis of the filter TF
+datetime   g_lastFilterBar = 0;
+
+//--- Basket management
+bool   g_beDone          = false;   // break-even already applied to the basket
+double g_basketPeakPct   = 0.0;     // highest floating profit % (trailing)
+
+//--- Runtime flags
+bool   g_isTester        = false;   // running in the Strategy Tester
+bool   g_drawUI          = true;    // dashboard is drawn (off in non-visual tests)
 
 //--- Trading / UI objects
 CTrade       g_trade;

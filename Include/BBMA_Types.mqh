@@ -35,6 +35,15 @@ enum ENUM_CLOSE_RULE
    CLOSE_AT_REVERSE = 2  // At reverse signal (long term)
   };
 
+//--- Entry style (mirrors "Order Types" of the Analyzer Dashboard EA)
+enum ENUM_ORDER_MODE
+  {
+   ORDERS_SINGLE           = 0, // Single entry (SL/TP)
+   ORDERS_INSTANT_LIMIT    = 1, // Instant + Limit orders
+   ORDERS_INSTANT_STOP     = 2, // Instant + Stop orders
+   ORDERS_INSTANT_STOP_LIM = 3  // Instant + Stop + Limit orders
+  };
+
 //+------------------------------------------------------------------+
 //| Structures                                                       |
 //+------------------------------------------------------------------+

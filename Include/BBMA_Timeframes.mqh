@@ -28,6 +28,41 @@ void InitTFArrays()
       g_h[i].atr      = INVALID_HANDLE;
       ZeroMemory(g_a[i]);
      }
+
+   g_hFilter.bb   = INVALID_HANDLE;
+   g_hFilter.ma5  = INVALID_HANDLE;
+   g_hFilter.ma10 = INVALID_HANDLE;
+   g_hFilter.ema  = INVALID_HANDLE;
+   g_hFilter.atr  = INVALID_HANDLE;
+   ZeroMemory(g_aFilter);
+   g_lastFilterBar = 0;
+  }
+
+//+------------------------------------------------------------------+
+//| Trend of the higher-TF filter: 1 / -1, 0 = unknown               |
+//| Uses close vs EMA50 of the last closed bar of that TF.           |
+//+------------------------------------------------------------------+
+int FilterTrend()
+  {
+   if(g_filterIdx < 0)
+      return 0;
+   double ema = (g_use[g_filterIdx] ? g_a[g_filterIdx].ema50 : g_aFilter.ema50);
+   if(ema <= 0.0)
+      return 0;
+   double c = iClose(_Symbol, g_tf[g_filterIdx], 1);
+   if(c > ema)
+      return 1;
+   if(c < ema)
+      return -1;
+   return 0;
+  }
+
+//--- true when a trade in direction dir is allowed by the filter
+bool FilterAllows(const int dir)
+  {
+   if(g_filterIdx < 0)
+      return true;
+   return (FilterTrend() == dir);
   }
 
 //+------------------------------------------------------------------+
@@ -58,6 +93,9 @@ void BuildTFList()
    g_majorIdx  = (g_count > 0 ? g_enabled[0] : -1);
    g_secondIdx = (g_count > 1 ? g_enabled[1] : -1);
    g_thirdIdx  = (required == 3 && g_count > 2 ? g_enabled[2] : -1);
+
+   //--- Higher-TF filter: the fixed slot right above the major TF
+   g_filterIdx = (InpFilterHigherTF && g_majorIdx > 0 ? g_majorIdx - 1 : -1);
 
    Print("TF config: count=", g_count, " required=", required,
          " ok=", (g_configOk ? "true" : "false"));

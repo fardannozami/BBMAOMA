@@ -21,6 +21,10 @@ void UpdateAnalysis()
          return;
      }
 
+   //--- higher-TF filter slot that is not enabled: analyse it separately
+   if(g_filterIdx >= 0 && !g_use[g_filterIdx] && g_hFilter.bb != INVALID_HANDLE)
+      AnalyzeTF(g_tf[g_filterIdx], g_hFilter, g_aFilter);
+
    //--- Two-timeframe preparation: major re-entry plus a middle-TF
    //    EMA rejection or BB-to-EMA gap rejection.
    g_prepBuy  = (g_a[g_majorIdx].reentryBuy &&
@@ -73,6 +77,12 @@ void UpdateAnalysis()
       g_finalSell = false;
       g_activeSetup = "";
      }
+
+   //--- re-entry must follow the trend of the TF above the major TF
+   if(!FilterAllows(1))
+     { g_prepBuy = false; g_finalBuy = false; }
+   if(!FilterAllows(-1))
+     { g_prepSell = false; g_finalSell = false; }
 
    if(g_finalBuy && g_finalSell)
      {
