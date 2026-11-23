@@ -369,10 +369,15 @@ langsung menutup posisi.
 
 | Urutan | Aturan | BUY | SELL |
 |---|---|---|---|
+| 0 | Basket stop (`InpBasketStopPct`) | floating profit basket ≤ −N% balance (berlaku dua arah) | sama |
 | 1 | Cut-loss (`InpCutLossOnCSM`) | SECOND `csmSell` && `bid < ema50` | SECOND `csmBuy` && `ask > ema50` |
 | 2 | `CLOSE_AT_MA` | `bid <= ma5` MAJOR | `ask >= ma10` MAJOR |
 | 3 | `CLOSE_AT_BB` | `bid >= bbU` MAJOR | `ask <= bbL` MAJOR |
 | 4 | `CLOSE_AT_REVERSE` | `finalSell` | `finalBuy` |
+
+Basket stop dicek **sebelum** aturan lain dan menutup semua posisi + pending. Ini
+satu-satunya batas kerugian nominal pada basket layering, karena order layering
+dibuka tanpa SL/TP per-order (`InpLayerSLTP = false`).
 
 Cut-loss memakai EMA50 dan CSM dari **SECOND** TF, sedangkan target profit
 memakai MA/BB dari **MAJOR** TF.

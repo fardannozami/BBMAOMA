@@ -410,6 +410,24 @@ void ManagePositions()
    bool close = false;
    string why = "";
 
+   //--- Hard money stop: the basket itself carries a stop-loss so a
+   //    single adverse move can never run without a limit. Without this
+   //    a layered basket has no protective order at all.
+   if(InpBasketStopPct > 0.0)
+     {
+      double bal = AccountInfoDouble(ACCOUNT_BALANCE);
+      if(bal > 0.0)
+        {
+         double lossPct = BasketProfit() / bal * 100.0;
+         if(lossPct <= -InpBasketStopPct)
+           {
+            Print("Closing basket (", nPos, " pos): basket stop ", DoubleToString(lossPct, 2), "%");
+            CloseAll();
+            return;
+           }
+        }
+     }
+
    if(TrailingHit())
      {
       close = true;

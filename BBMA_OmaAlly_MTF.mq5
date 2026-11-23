@@ -35,12 +35,12 @@
 input group "=== TIMEFRAMES (XAUUSD) ==="
 input bool              InpUseW1         = false;     // Enable 1W
 input bool              InpUseD1         = false;     // Enable 1D
-input bool              InpUseH4         = true;      // Enable 4H
+input bool              InpUseH4         = false;     // Enable 4H
 input bool              InpUseH1         = true;      // Enable 1H
 input bool              InpUseM15        = true;      // Enable 15M
-input bool              InpUseM5         = false;     // Enable 5M
+input bool              InpUseM5         = true;      // Enable 5M
 input ENUM_CONFIRM_MODE InpConfirmMode   = CONFIRM_3TF; // 2TF or 3TF
-input bool              InpFilterHigherTF = true;     // Filter: trade with the trend of the TF above major
+input bool              InpFilterHigherTF = false;    // Filter: trade with the trend of the TF above major
 
 input group "=== BBMA PARAMETERS ==="
 input int    InpBBPeriod        = 20;     // Bollinger Bands period
@@ -67,8 +67,8 @@ input int             InpSlippage      = 20;       // Slippage (points)
 input ENUM_LOT_MODE   InpLotMode       = LOT_FIXED;// Lot mode
 input double          InpLot           = 0.01;     // Fixed lot
 input double          InpRiskPercent   = 1.0;      // Risk % (compounding)
-input double          InpSLATR         = 1.5;      // SL distance (x ATR)
-input double          InpRR            = 1.5;      // Reward:Risk
+input double          InpSLATR         = 1.2;      // SL distance (x ATR)
+input double          InpRR            = 2.0;      // Reward:Risk
 input int             InpMinSLPoints   = 150;      // Minimum SL (points)
 input int             InpStopBufferPts = 10;       // Extra stop buffer (points)
 input int             InpMaxSpread     = 50;       // Max spread (points, 0 = off)
@@ -82,11 +82,12 @@ input bool            InpLayerSLTP     = false;    // Layering: also set SL/TP o
 input int             InpPendingExpiryHours = 24;  // Delete untouched pendings after N hours (0 = never)
 
 input group "=== EXIT MANAGEMENT ==="
-input ENUM_CLOSE_RULE InpCloseMode     = CLOSE_AT_BB; // Where to close (major TF)
+input ENUM_CLOSE_RULE InpCloseMode     = CLOSE_AT_REVERSE; // Where to close (major TF)
 input bool            InpCutLossOnCSM  = true;        // Cut loss on CSM + EMA50 break (TF2)
 
 input group "=== RISK MANAGEMENT ==="
 input int             InpSessionBufferMin = 60;       // No new trades N minutes after open / before close
+input double          InpBasketStopPct = 5.0;         // Hard stop: close basket at floating loss % of balance (0 = off)
 input double          InpDailyTargetPct= 0.0;         // Max daily target % (0 = off)
 input double          InpDailyLossPct  = 3.0;         // Max daily loss % (0 = off)
 input bool            InpFridayClose   = true;        // Close all before market close on Friday

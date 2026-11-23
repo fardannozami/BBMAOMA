@@ -73,10 +73,10 @@ Aktifkan TF lewat input:
 |---|---|---|
 | `InpUseD1` | false | Aktifkan 1D |
 | `InpUseW1` | false | Aktifkan 1W |
-| `InpUseH4` | true | Aktifkan 4H |
+| `InpUseH4` | false | Aktifkan 4H |
 | `InpUseH1` | true | Aktifkan 1H |
 | `InpUseM15` | true | Aktifkan 15M |
-| `InpUseM5` | false | Aktifkan 5M |
+| `InpUseM5` | true | Aktifkan 5M |
 | `InpConfirmMode` | 3TF | 2TF atau 3TF |
 
 **Aturan jumlah TF:**
@@ -157,10 +157,10 @@ Status pola ditentukan otomatis dari susunan timeframe aktif.
 | `InpFastMA / InpSlowMA` | 5 / 10 | MA High / MA Low |
 | `InpTrendEMA` | 50 | EMA trend |
 | `InpSetupLookback` | 20 | Batas bar untuk mencari urutan setup |
-| `InpFilterHigherTF` | true | Hanya entry searah tren TF di atas MAJOR (close vs EMA50). Contoh: MAJOR 4H → filter 1D |
+| `InpFilterHigherTF` | false | Hanya entry searah tren TF di atas MAJOR (close vs EMA50). Contoh: MAJOR 1H → filter 4H |
 | `InpAutoTrade` | false | Full auto sejak EA dipasang (sama dengan tombol AUTO). Di Strategy Tester selalu ON |
 | `InpLotMode / InpLot / InpRiskPercent` | Fixed / 0.01 / 1% | Lot. Compounding = risk % dari balance berdasarkan jarak SL, dibagi rata ke semua order layering |
-| `InpSLATR / InpRR` | 1.5 / 1.5 | SL berbasis ATR MAJOR TF & RR |
+| `InpSLATR / InpRR` | 1.2 / 2.0 | SL berbasis ATR MAJOR TF & RR |
 | `InpMaxSpread` | 50 pts | Filter spread XAUUSD |
 | `InpMaxPositions` | 0 | Batas posisi terbuka (0 = tanpa batas). Tetap hanya 1 basket (1 arah) sekaligus |
 | `InpOrderMode` | Single | Order types: Single (SL/TP) / Instant + Limit / Instant + Stop / Instant + Stop + Limit |
@@ -168,9 +168,10 @@ Status pola ditentukan otomatis dari susunan timeframe aktif.
 | `InpDistancePips` | 10 | Jarak antar pending order. 1 pip = 10 point (XAUUSD 2 digit: 10 pip = $1.00) |
 | `InpLayerSLTP` | false | Layering: pasang SL/TP juga di setiap order. Default false sesuai guidebook (TP/SL hanya untuk Single) |
 | `InpPendingExpiryHours` | 24 | Hapus pending yang belum tersentuh jika tidak ada posisi terbuka |
-| `InpCloseMode` | BB | Exit: MA / BB / reverse signal (lihat bagian Exit) |
+| `InpCloseMode` | Reverse signal | Exit: MA / BB / reverse signal (lihat bagian Exit) |
 | `InpCutLossOnCSM` | true | Cut loss CSM + break EMA50 di SECOND TF |
 | `InpSessionBufferMin` | 60 | Tidak ada entry otomatis N menit setelah sesi buka & sebelum sesi tutup |
+| `InpBasketStopPct` | 5% | **Hard stop basket**: tutup semua posisi jika floating loss ≥ N% balance (0 = off) |
 | `InpDailyTargetPct` | 0 | Target harian % (0 = off). Tercapai → close all, stop sampai besok |
 | `InpDailyLossPct` | 3% | Batas rugi harian. Tercapai → close all, stop sampai besok |
 | `InpFridayClose` | true | Tutup semua posisi & pending menjelang sesi Jumat tutup (fallback `InpFridayHour`) |
@@ -246,6 +247,9 @@ Semua aturan exit berlaku untuk seluruh basket (semua posisi + pending ditutup s
   entry (SL+). Basket ditutup saat ada Extreme berlawanan di MAJOR, CSM berlawanan di SECOND,
   atau sinyal final berlawanan.
 - **Cut-loss** — CSM melawan posisi + harga menembus EMA50 di SECOND TF.
+- **Basket stop** — `InpBasketStopPct` (default 5%). Menutup seluruh basket saat
+  floating loss mencapai N% balance. Ini pengaman wajib: order layering tidak punya
+  SL per-order, jadi tanpa guard ini satu pergerakan lawan bisa menghabiskan akun.
 - **Trailing %** — lihat `InpTrailStartPct / InpTrailLockPct`.
 - Mode Single juga punya SL/TP (ATR × `InpSLATR`, RR `InpRR`).
 

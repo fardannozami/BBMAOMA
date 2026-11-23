@@ -1,0 +1,68 @@
+; BBMA_OmaAlly_MTF - XAUUSD best preset (Sep 2026 backtest + 2y validation)
+; Verified: 2026.09.01-2026.11.23  net +200.39  DD 4.63%  PF 2.75  26 trades
+;           2025.01.02-2026.11.23  net +466.13  DD 21.79% PF 1.51 146 trades
+; Load in Strategy Tester: Inputs tab -> Load -> this file.
+;
+; ==================== TIMEFRAMES ====================
+InpUseW1=false
+InpUseD1=false
+InpUseH4=false
+InpUseH1=true
+InpUseM15=true
+InpUseM5=true
+InpConfirmMode=1
+InpFilterHigherTF=false
+; ==================== BBMA ====================
+InpBBPeriod=20
+InpBBDeviation=2.0
+InpFastMA=5
+InpSlowMA=10
+InpTrendEMA=50
+InpATRPeriod=14
+InpSetupLookback=20
+InpRequireMAStack=true
+; ==================== SIGNALS ====================
+InpAlertPopup=false
+InpAlertPush=false
+InpAlertTelegram=false
+InpTelegramToken=
+InpTelegramChat=
+InpAlertPreparation=false
+; ==================== TRADING ====================
+InpAutoTrade=true
+InpMagic=20261027
+InpSlippage=20
+InpLotMode=0
+InpLot=0.01
+InpRiskPercent=1.0
+InpSLATR=1.2
+InpRR=2.0
+InpMinSLPoints=150
+InpStopBufferPts=10
+InpMaxSpread=50
+InpMaxPositions=0
+; ==================== ORDERS ====================
+InpOrderMode=0
+InpLevels=5
+InpDistancePips=10.0
+InpLayerSLTP=false
+InpPendingExpiryHours=24
+; ==================== EXIT ====================
+InpCloseMode=2
+InpCutLossOnCSM=true
+; ==================== RISK ====================
+InpSessionBufferMin=60
+InpBasketStopPct=5.0
+InpDailyTargetPct=0.0
+InpDailyLossPct=3.0
+InpFridayClose=true
+InpFridayHour=22
+; ==================== TRAILING ====================
+InpTrailStartPct=0.0
+InpTrailLockPct=0.0
+; ==================== DASHBOARD ====================
+InpShowPanel=true
+InpPanelCorner=0
+InpPanelX=4
+InpPanelY=12
+InpFontSize=9
